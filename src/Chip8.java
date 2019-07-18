@@ -5,7 +5,7 @@ public class Chip8 {
     private short memory[];
 
     private int V[];   // General purpose 8-bit registers
-    private short I;     // 16 bit I register generally used for memory addresses
+    private int I;     // 16 bit I register generally used for memory addresses
     private short DT,ST; // Delay and sound timers
 
     private int PC;   // Program Counter
@@ -29,7 +29,8 @@ public class Chip8 {
         int opcode = (topByte << 8) | bottomByte;
         dFlag = false;
 
-        int regX, regY;
+        int regX = opcode & 0x0F00 >>> 8;
+        int regY = opcode & 0x00F0 >>> 4;
 
         switch(opcode){
 
@@ -58,42 +59,34 @@ public class Chip8 {
                 return;
                 
             case(0x3000):
-                regX = opcode & 0x0F00 >>> 8;
                 if(V[regX] == (opcode & 0x00FF))
                     PC += 2;
                 PC += 2;
                 return;
                 
             case(0x4000):
-                regX = opcode & 0x0F00 >>> 8;
                 if(V[regX] != (opcode & 0x00FF))
                     PC += 2;
                 PC += 2;
                 return;
 
             case(0x5000):
-                regX = opcode & 0x0F00 >>> 8;
-                regY = opcode & 0x00F0 >>> 4;
                 if(V[regX] == V[regY])
                     PC += 2;
                 PC += 2;
                 return;
 
             case(0x6000):
-                regX = opcode & 0x0F00 >>> 8;
                 V[regX] = opcode & 0x00FF;
                 PC += 2;
                 return;
 
             case(0x7000):
-                regX = opcode & 0x0F00 >>> 8;
                 V[regX] += opcode & 0x00FF;
                 PC += 2;
                 return;
 
             case(0x8000):
-                regX = opcode & 0x0F00 >>> 8;
-                regY = opcode & 0x00F0 >>> 4;
                 switch(opcode & 0x000F){
 
                     case(0x0000):
@@ -147,8 +140,19 @@ public class Chip8 {
                         PC += 2;
                         return;
                 }
-        }
 
+            case(0x9000):
+                if (V[regX] != V[regY]) {
+                    PC += 2;
+                }
+                PC += 2;
+                return;
+
+            case(0xA000):
+                I = opcode & 0x0FFF;
+                PC += 2;
+                return;
+        }
 
 
     }
