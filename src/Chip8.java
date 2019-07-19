@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class Chip8 {
 
     private final int FOURKILOBYTES = 4096;
@@ -152,6 +154,49 @@ public class Chip8 {
                 I = opcode & 0x0FFF;
                 PC += 2;
                 return;
+
+            case(0xB000):
+                PC = (opcode & 0x0FFF) + V[0];
+                return;
+
+            case(0xC000):
+                Random rand = new Random();
+                V[regX] = rand.nextInt(256) & (opcode & 0xFF);  // Vx = a random byte ANDed with the value kk
+                PC += 2;
+                return;
+
+            case(0xD000):
+                //TODO Implement display opcode
+                return;
+
+            case(0xE000):
+                // Opcode: SKP Vx
+                if((opcode & 0xFF) == 0x9E){
+
+                    if(keyPad[V[regX]])     // Skips next instruction if key number Vx is down
+                        PC += 2;
+                    PC += 2;
+                    return;
+
+                }
+                // Opcode: SKNP Vx
+                else{
+                    if(!keyPad[V[regX]])    // Skips next instruction if key number Vx is not down
+                        PC += 2;
+                    PC += 2;
+                    return;
+                }
+
+            case(0xF000):
+                switch(opcode & 0x00FF){
+                    case(0x07):
+                        V[regX] = DT;
+                        PC += 2;
+                        return;
+
+                    case(0x0A):
+                        
+                }
         }
 
 
