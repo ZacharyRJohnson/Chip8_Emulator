@@ -14,7 +14,8 @@ public class Chip8 {
     private int SP = -1;    // Stack Pointer
     private int stack[] = new int[16];
 
-    private boolean display[][], dFlag;     // Display array, and the display flag
+    private int display[][];
+    private boolean dFlag;     // Display array, and the display flag
 
     private boolean keyPad[] = new boolean[16];
 
@@ -22,7 +23,7 @@ public class Chip8 {
         memory = new int[FOURKILOBYTES];
         V = new int[16];
         PC = 0x200;     // Start of most Chip-8 program
-        display = new boolean[32][64];
+        display = new int[32][64];
     }
 
     public void executeOpcode() {
@@ -166,7 +167,22 @@ public class Chip8 {
                 return;
 
             case (0xD000):
-                //TODO Implement display opcode
+                int n = opcode & 0xF;
+                V[15] = 0;
+                for(int i = 0; i < n; i++) {
+                    int temp = memory[I + i];
+                    for(int j = 0; j < 8; j++) {
+                        int pixel = temp & (0b10000000 >> j);
+                        if(pixel == 1){
+                            // Check for collision
+                            if(display[(regX + i) % 64][(regY + j) % 32] == 1)
+                                V[15] = 1;      // Set VF = to 1 if there is a collision
+                        }
+                        display[regX + i][regY + j] ^= pixel;
+                    }
+                }
+                dFlag = true;
+                PC += 2;
                 return;
 
         }
@@ -256,7 +272,7 @@ public class Chip8 {
     private void clearDisplay() {
         for(int i = 0; i < display.length; i++){
             for (int j = 0; j < display[i].length; j++){
-                display[i][j] = false;
+                display[i][j] = 0;
             }
         }
         dFlag = true;
