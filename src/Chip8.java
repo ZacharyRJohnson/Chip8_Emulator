@@ -6,16 +6,16 @@ public class Chip8 {
 
     private int memory[];
 
-    private int V[];   // General purpose 8-bit registers
-    private int I;     // 16 bit I register generally used for memory addresses
-    private int DT,ST; // Delay and sound timers
+    private int V[];        // General purpose 8-bit registers
+    private int I;          // 16 bit I register generally used for memory addresses
+    private int DT,ST;      // Delay and sound timers
 
-    private int PC;   // Program Counter
+    private int PC;         // Program Counter
     private int SP = -1;    // Stack Pointer
     private int stack[] = new int[16];
 
     private Display display;
-    private boolean dFlag;     // Display flag
+    private boolean dFlag;  // Display flag
 
     private boolean keyPad[] = new boolean[16];
 
@@ -266,7 +266,7 @@ public class Chip8 {
                 PC += 2;
                 return;
         }
-
-
     }
+
+    public Display getDisplay(){ return display; }
 }
