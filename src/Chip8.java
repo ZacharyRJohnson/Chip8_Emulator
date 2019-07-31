@@ -1,8 +1,31 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Random;
 
 public class Chip8 {
 
     private final int FOURKILOBYTES = 4096;
+
+    public static final int FONTS[] = {
+            0xF0, 0x90, 0x90, 0x90, 0xF0,   // 0
+            0x20, 0x60, 0x20, 0x20, 0x70,   // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0,   // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0,   // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10,   // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0,   // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0,   // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40,   // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0,   // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0,   // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90,   // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0,   // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0,   // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0,   // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0,   // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80    // F
+    };
 
     private int memory[];
 
@@ -21,15 +44,14 @@ public class Chip8 {
 
     public Chip8() {
         memory = new int[FOURKILOBYTES];
+        System.arraycopy(FONTS, 0, memory, 0, FONTS.length);    // Load Fonts into memory
         V = new int[16];
         PC = 0x200;     // Start of most Chip-8 program
         display = new Display();
     }
 
     public void executeOpcode() {
-        int topByte = memory[PC];
-        int bottomByte = memory[PC + 1];
-        int opcode = (topByte << 8) | bottomByte;
+        int opcode = (memory[PC] << 8) | memory[PC + 1];    // Get full opcode from PC and PC + 1
         dFlag = false;
 
         int regX = opcode & 0x0F00 >>> 8;
@@ -265,6 +287,23 @@ public class Chip8 {
 
                 PC += 2;
                 return;
+        }
+    }
+
+    public boolean loadRom(String romFile) {
+        try(
+                InputStream inputStream = new FileInputStream(romFile);
+        ) {
+            long fileSize = new File(romFile).length();
+            byte[] romBuffer = new byte[(int) fileSize];
+
+            inputStream.read(romBuffer);
+
+            System.arraycopy(romBuffer, 0, memory, 0x200, (int)fileSize);
+            return true;
+        } catch( IOException ex) {
+            ex.printStackTrace();
+            return false;
         }
     }
 
