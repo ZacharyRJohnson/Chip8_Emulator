@@ -2,17 +2,25 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.Arrays;
+
 public class Display extends Canvas {
 
     private final int WIDTH = 64, HEIGHT = 32, SCALE = 10;
     private int screen[][];
     private GraphicsContext gc;
-    private Canvas canvas;
+    //private Canvas canvas;
 
     public Display(){
+        super(800, 400);
         screen = new int[HEIGHT][WIDTH];
-        canvas = new Canvas(WIDTH * SCALE, HEIGHT * SCALE);
-        gc = canvas.getGraphicsContext2D();
+        for(int i = 0; i < HEIGHT; i++)
+            Arrays.fill(screen[i], 0);
+
+        //canvas = new Canvas(WIDTH * SCALE, HEIGHT * SCALE);
+        setFocusTraversable(true);
+        gc = this.getGraphicsContext2D();
+        clearScreen();
     }
 
     public void drawScreen() {

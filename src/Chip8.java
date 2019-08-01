@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Chip8 {
@@ -34,7 +35,7 @@ public class Chip8 {
     private int DT,ST;      // Delay and sound timers
 
     private int PC;         // Program Counter
-    private int SP = -1;    // Stack Pointer
+    private int SP;    // Stack Pointer
     private int stack[] = new int[16];
 
     private Display display;
@@ -44,9 +45,22 @@ public class Chip8 {
 
     public Chip8() {
         memory = new int[FOURKILOBYTES];
+        Arrays.fill(memory, 0);
         System.arraycopy(FONTS, 0, memory, 0, FONTS.length);    // Load Fonts into memory
+
         V = new int[16];
+        Arrays.fill(V, 0);
+
         PC = 0x200;     // Start of most Chip-8 program
+        DT = 0;
+        ST = 0;
+        I = 0;
+        SP = 0;
+
+        Arrays.fill(stack, 0);
+
+        dFlag = false;
+
         display = new Display();
     }
 
