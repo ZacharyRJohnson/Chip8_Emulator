@@ -1,7 +1,4 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -65,21 +62,23 @@ public class Chip8 {
     }
 
     public void executeOpcode() {
-        int opcode = (memory[PC] << 8) | memory[PC + 1];    // Get full opcode from PC and PC + 1
+        int opcode = ((memory[PC] << 8) | (memory[PC + 1]));    // Get full opcode from PC and PC + 1
+        System.out.println(String.format("0x%04X", opcode));
+
         dFlag = false;
 
-        int regX = opcode & 0x0F00 >>> 8;
-        int regY = opcode & 0x00F0 >>> 4;
+        int regX = (opcode & 0x0F00) >>> 8;
+        int regY = (opcode & 0x00F0) >>> 4;
 
         switch(opcode){
 
-            case(0x00E0):
+            case (0x00E0):
                 display.clearScreen();
                 dFlag = true;
                 PC += 2;
                 return;
 
-            case(0x00EE):
+            case (0x00EE):
                 PC = stack[SP--];
                 PC += 2;
                 return;
@@ -88,14 +87,18 @@ public class Chip8 {
 
         switch(opcode & 0xF000) {
 
+            case (0x0000):
+                PC += 2;
+                return;
+
             case (0x1000):
-                PC = opcode & 0x0FFF;
+                PC = (opcode & 0x0FFF);
                 return;
 
             case (0x2000):
                 SP++;
                 stack[SP] = PC;
-                PC = opcode & 0x0FFF;
+                PC = (opcode & 0x0FFF);
                 return;
 
             case (0x3000):
@@ -117,12 +120,12 @@ public class Chip8 {
                 return;
 
             case (0x6000):
-                V[regX] = opcode & 0x00FF;
+                V[regX] = (opcode & 0x00FF);
                 PC += 2;
                 return;
 
             case (0x7000):
-                V[regX] += opcode & 0x00FF;
+                V[regX] += (opcode & 0x00FF);
                 PC += 2;
                 return;
 
@@ -164,7 +167,7 @@ public class Chip8 {
 
                     case (0x0006):
                         V[15] = V[regX] & 0x1;
-                        V[regX] = V[regX] >>> 1;
+                        V[regX] = (V[regX] >>> 1);
                         PC += 2;
                         return;
 
@@ -189,7 +192,7 @@ public class Chip8 {
                 return;
 
             case (0xA000):
-                I = opcode & 0x0FFF;
+                I = (opcode & 0x0FFF);
                 PC += 2;
                 return;
 
@@ -205,16 +208,18 @@ public class Chip8 {
 
             case (0xD000):
                 int n = opcode & 0xF;
+                int x = V[regX];
+                int y = V[regY];
                 V[15] = 0;
                 for(int i = 0; i < n; i++) {
                     int temp = memory[I + i];
                     for(int j = 0; j < 8; j++) {
                         int pixel = temp & (0b10000000 >> j);
-                        if(pixel == 1){
+                        if(pixel != 0){
                             // Check for collision
-                            if(display.getPixel((regX + i) % 64, (regY + j) % 32) == 1)
+                            if(display.getPixel((y + i) % 64, (x + j) % 32) == 1)
                                 V[15] = 1;      // Set VF = to 1 if there is a collision
-                            display.setPixel((regX + i) % 64, (regY + j) % 32);
+                            display.setPixel((y + i) % 64, (x + j) % 32);
                         }
                     }
                 }
@@ -226,14 +231,14 @@ public class Chip8 {
 
         switch(opcode & 0xF0FF) {
             // Opcode: SKP Vx
-            case(0xE09E):
+            case (0xE09E):
                 if (keyPad[V[regX]])     // Skips next instruction if key number Vx is down
                     PC += 2;
                 PC += 2;
                 return;
 
             // Opcode: SKNP Vx
-            case(0xE0A1):
+            case (0xE0A1):
                 if (!keyPad[V[regX]])    // Skips next instruction if key number Vx is not down
                     PC += 2;
                 PC += 2;
@@ -255,27 +260,27 @@ public class Chip8 {
                 }
                 return;
 
-            case(0xF015):
+            case (0xF015):
                 DT = V[regX];
                 PC += 2;
                 return;
 
-            case(0xF018):
+            case (0xF018):
                 ST = V[regX];
                 PC += 2;
                 return;
 
-            case(0xF01E):
+            case (0xF01E):
                 I = I + V[regX];
                 PC += 2;
                 return;
 
-            case(0xF029):
+            case (0xF029):
                 I = V[regX] * 5;
                 PC += 2;
                 return;
 
-            case(0xF033):
+            case (0xF033):
                 int temp = V[regX];
                 memory[I] = temp / 100;
                 temp %= 100;
@@ -286,7 +291,7 @@ public class Chip8 {
                 PC += 2;
                 return;
 
-            case(0xF055):
+            case (0xF055):
                 for(int i = 0; i < regX; i++){
                     memory[I + i] = V[i];
                 }
@@ -294,32 +299,50 @@ public class Chip8 {
                 PC += 2;
                 return;
 
-            case(0xF065):
+            case (0xF065):
                 for(int i = 0; i < regX; i++){
                     V[i] = memory[I + i];
                 }
 
                 PC += 2;
                 return;
+
+            default:
+                System.out.print("Unrecognized opcode: ");
+                System.out.println(String.format("0x%04X", opcode));
+                return;
         }
     }
 
     public boolean loadRom(String romFile) {
-        try(
-                InputStream inputStream = new FileInputStream(romFile);
-        ) {
-            long fileSize = new File(romFile).length();
-            byte[] romBuffer = new byte[(int) fileSize];
+        try {
+            File f = new File(romFile);
+            byte[] romBuffer = new byte[(int)f.length()];
+            DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
+            in.read(romBuffer);
 
-            inputStream.read(romBuffer);
+            for(int i = 0; i < romBuffer.length; i++)
+                memory[512 + i] = (romBuffer[i] & 0xFF);
 
-            System.arraycopy(romBuffer, 0, memory, 0x200, (int)fileSize);
+            in.close();
             return true;
         } catch( IOException ex) {
+            System.out.println("Something went wrong");
             ex.printStackTrace();
             return false;
         }
     }
 
+    public void updateTimers() {
+        if(DT > 0)
+            DT--;
+        if(ST > 0) {
+            System.out.println("Sound!");
+            ST--;
+        }
+    }
+
     public Display getDisplay(){ return display; }
+
+    public boolean getdFlag(){ return dFlag; }
 }

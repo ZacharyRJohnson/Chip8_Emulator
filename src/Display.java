@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 public class Display extends Canvas {
 
-    private final int WIDTH = 64, HEIGHT = 32, SCALE = 10;
+    private final int WIDTH = 64, HEIGHT = 32, SCALE = 12;
     private int screen[][];
     private GraphicsContext gc;
     //private Canvas canvas;
@@ -17,19 +17,18 @@ public class Display extends Canvas {
         for(int i = 0; i < HEIGHT; i++)
             Arrays.fill(screen[i], 0);
 
-        //canvas = new Canvas(WIDTH * SCALE, HEIGHT * SCALE);
-        setFocusTraversable(true);
+        //setFocusTraversable(true);
         gc = this.getGraphicsContext2D();
         clearScreen();
     }
 
     public void drawScreen() {
-        for(int x = 0; x < HEIGHT; x++){
-            for(int y = 0; y < WIDTH; y++){
-                if(screen[x][y] == 0)
-                    gc.setFill(Color.WHITE);
-                else if(screen[x][y] == 1)
+        for(int x = 0; x < WIDTH; x++){
+            for(int y = 0; y < HEIGHT; y++){
+                if(screen[y][x] == 0)
                     gc.setFill(Color.BLACK);
+                else if(screen[y][x] == 1)
+                    gc.setFill(Color.WHITE);
                 gc.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
             }
         }
