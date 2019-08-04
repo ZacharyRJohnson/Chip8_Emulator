@@ -56,6 +56,8 @@ public class Chip8 {
 
         Arrays.fill(stack, 0);
 
+        Arrays.fill(keyPad, false);
+
         dFlag = false;
 
         display = new Display();
@@ -63,7 +65,6 @@ public class Chip8 {
 
     public void executeOpcode() {
         int opcode = ((memory[PC] << 8) | (memory[PC + 1]));    // Get full opcode from PC and PC + 1
-        System.out.println(String.format("0x%04X", opcode));
 
         dFlag = false;
 
@@ -217,9 +218,9 @@ public class Chip8 {
                         int pixel = temp & (0b10000000 >> j);
                         if(pixel != 0){
                             // Check for collision
-                            if(display.getPixel((y + i) % 64, (x + j) % 32) == 1)
+                            if(display.getPixel((y + i) % 32, (x + j) % 64) == 1)
                                 V[15] = 1;      // Set VF = to 1 if there is a collision
-                            display.setPixel((y + i) % 64, (x + j) % 32);
+                            display.setPixel((y + i) % 32, (x + j) % 64);
                         }
                     }
                 }
@@ -340,6 +341,14 @@ public class Chip8 {
             System.out.println("Sound!");
             ST--;
         }
+    }
+
+    public void setKeyPressed(int key){
+        keyPad[key] = true;
+    }
+
+    public void setKeyReleased(int key){
+        keyPad[key] = false;
     }
 
     public Display getDisplay(){ return display; }
